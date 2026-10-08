@@ -1,6 +1,7 @@
 # MegaVul Dataset Note
 
 - **Source:** https://github.com/Icyrockton/MegaVul/blob/main/README.md?utm_source=chatgpt.com#-simple-usecase
+- **Download link :** https://onedrive.live.com/?ls=true&cid=6CFE4123EACEEBDC&id=6CFE4123EACEEBDC%2129299&parId=6CFE4123EACEEBDC%2129248&o=OneUp
 - **Dataset file:** `megavul_simple.json`
 - **Version:** 2024  (`megavul_simple.json`)
 - **License:** GPL-3.0
