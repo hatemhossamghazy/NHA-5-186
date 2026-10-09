@@ -1,3 +1,4 @@
+# What survives if we drop the bookkeeping?
 import collections
 import sys
 

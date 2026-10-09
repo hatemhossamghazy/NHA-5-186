@@ -4,10 +4,13 @@
 
 Status: Week 1 deliverable, ready for Gate G1 review. The node set, edge set and feature
 layout below are implemented by `scripts/graphml_to_pyg.py` and checked against Joern 4.0.647
-on Python (3 samples), C (1 sample) and C++ (1 sample), all tiny. Items marked TENTATIVE rest
-on judgement or very little data and need an experiment. Bump `schema_version` whenever the
-node set, edge set, feature layout or filter rules change (it is part of the graph cache key,
-D5). The version string is unchanged from the first PR because no rule has changed since.
+on Python (3 samples), C (1 sample) and C++ (2 samples), all tiny. Items marked TENTATIVE rest
+on judgement or very little data and need an experiment. Raw graphs are produced by the
+GraphExtractor (`shield_core/extraction/`, D2) and cached; this document describes how those
+raw graphs are filtered and turned into PyG features. What bumps which version is explained
+in the "Versions" section: `schema_version` changes only when the raw extractor output
+changes, while changes to kept node/edge types or the feature layout bump the converter
+version instead.
 
 ## 1. Granularity
 
@@ -23,7 +26,8 @@ IDENTIFIER, LITERAL, LOCAL, FIELD_IDENTIFIER, RETURN, METHOD_REF, CONTROL_STRUCT
 
 Dropped (TENTATIVE): FILE, META_DATA, NAMESPACE, NAMESPACE_BLOCK, TYPE, TYPE_DECL, BINDING,
 MODIFIER, METHOD_PARAMETER_OUT, CLOSURE_BINDING, and, seen in C/C++ exports, IMPORT and
-DEPENDENCY (they come from `#include`).
+DEPENDENCY (they come from `#include`) and
+TYPE_REF (seen in C++ templates; rare, little signal; revisit after the W2 bulk extraction)
 
 METHOD nodes in an export fall into three groups:
 
@@ -169,7 +173,22 @@ Joern 4.0.647, from `joern-parse --list-languages`:
 - Layers must accept edge types; plain GCNConv ignores `edge_type`, so a relation-aware layer
   is likely needed (check the PyG docs for the exact class and signature).
 
-## 9. Reproduce
+## 9. Versions
+
+Two versions exist and they bump for different reasons:
+
+- **`GRAPH_SCHEMA_VERSION`** (shield_core/extraction/graph_extractor.py) is part of the
+  graph cache key. Bump it ONLY when the raw extractor output changes: different Joern
+  flags, different attributes stored per node/edge. Bumping it invalidates every cached graph.
+- **Converter/feature version** (CPG -> PyG: kept node types, kept edge types, feature
+  layout, filter rules) is part of the processed-dataset cache, not the graph cache.
+  Bump it whenever the one-hot layout, the filter rules or the feature columns change.
+  The raw graphs stay valid.
+
+Changing which node types are kept (for example adding or dropping TYPE_REF) is a converter
+change, not a graph-cache change.
+
+## 10. Reproduce
 
 ```
 docker run --rm -v "${PWD}\<folder>:/workspace/sample" shield-joern bash -c "joern-parse sample/<file> --language <value> -o sample/cpg.bin && joern-export sample/cpg.bin --repr all --format graphml --out sample/export"
@@ -182,3 +201,4 @@ python scripts/graphml_to_pyg.py <folder>/export/export.xml
 
 - 0.1-draft: first version, Joern 4.0.647, Python samples.
 - 0.1-draft (notes added, no rule change): C and C++ findings, frontend values, stub-method rules.
+- - TYPE_REF recorded as dropped; versioning rules clarified (graph schema vs converter version).

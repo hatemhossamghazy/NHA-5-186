@@ -168,6 +168,9 @@ class DedupeEngine:
 
     def _with_hash(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
+        # Print existing columns to identify the culprit
+        if "code" not in df.columns:
+            raise KeyError(f"Dataset is missing 'code'! Found columns: {list(df.columns)}")
         df["code_hash"] = [
             self._hash_row(code, language)
             for code, language in zip(df["code"], df["language"], strict=True)

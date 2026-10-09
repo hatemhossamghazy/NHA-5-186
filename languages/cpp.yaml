@@ -1,6 +1,8 @@
 name: cpp
 enabled: true
-extensions: [".c", ".h", ".cc", ".cpp", ".cxx", ".hpp"]
+# The FIRST extension is the default used when the real file name is unknown (snippets).
+# .cpp first because the C++ parser accepts almost all C code; the reverse is not true.
+extensions: [".cpp", ".c", ".h", ".cc", ".cxx", ".hpp"]
 joern_frontend: NEWC
 # Here it will use tree_sitter_c grammer if extension
 # is .c otherwise will use tree_sitter_cpp -> this works

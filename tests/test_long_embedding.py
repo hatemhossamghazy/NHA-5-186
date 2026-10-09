@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from scripts.long_function_analysis import (
+from scripts.codebert_embeddings_analysis.long_function_analysis import (
     apply_truncation_policy,
     count_tokens,
 )
