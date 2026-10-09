@@ -1,3 +1,5 @@
+# Which node and edge types exist, and how many?
+
 import collections
 import sys
 

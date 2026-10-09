@@ -1,3 +1,4 @@
+# Why 6 METHOD nodes for one function?
 import sys
 
 import networkx as nx

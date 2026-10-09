@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from scripts.long_function_analysis import (
+from scripts.codebert_embeddings_analysis.long_function_analysis import (
     DEFAULT_MAX_TOKENS,
     DEFAULT_STRIDE,
     apply_truncation_policy,

@@ -1,3 +1,4 @@
+# What are these mystery nodes (738, 744, ...)?
 import sys
 
 import networkx as nx
