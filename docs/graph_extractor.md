@@ -106,7 +106,7 @@ which prevents a class of bugs.
 class GraphEdge:
     src: int
     dst: int
-    type: str   # AST, CFG, REACHING_DEF, CALL, ARGUMENT, CDG ...
+    type: str  # AST, CFG, REACHING_DEF, CALL, ARGUMENT, CDG ...
 ```
 
 An edge goes from the node with id `src` to the node with id `dst`.
@@ -158,6 +158,7 @@ node. A graph with thousands of nodes would otherwise waste a lot of space.
 ```python
 def normalize_code(code):
     return code.replace("\r\n", "\n").replace("\r", "\n")
+
 
 def code_sha256(code):
     return hashlib.sha256(normalize_code(code).encode("utf-8")).hexdigest()
