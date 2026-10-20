@@ -57,7 +57,7 @@ COLUMN_ALIASES = {
     "cwe": "CWE ID",
     "project": "project",
     "commit": "commit_id",
-    "date": "Publish Date",
+    "date": "Update Date",
     "lang": "lang",
     "cve": "CVE ID",
 }
