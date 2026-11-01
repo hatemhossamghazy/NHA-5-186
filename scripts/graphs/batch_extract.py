@@ -34,6 +34,27 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def assess_graph_quality(graph) -> dict:
+    """Flag suspicious Joern graphs without discarding extracted results."""
+    node_count = len(graph.nodes)
+    unknown_count = sum(node.type.strip().upper() == "UNKNOWN" for node in graph.nodes)
+
+    reasons = []
+
+    if node_count == 0:
+        reasons.append("empty_graph")
+
+    if unknown_count > 0:
+        reasons.append("unknown_nodes")
+
+    return {
+        "quality_status": "review" if reasons else "ok",
+        "unknown_nodes": unknown_count,
+        "unknown_ratio": round(unknown_count / node_count, 4) if node_count else 0.0,
+        "quality_reasons": reasons,
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Resumable, non-batched Joern graph extraction with bounded concurrency."
@@ -308,6 +329,7 @@ def main() -> None:
                     cache=cache,
                 )
                 graph = extractor.extract(item["code"], args.language)
+                quality = assess_graph_quality(graph)
 
                 return {
                     "sample_key": item["sample_key"],
@@ -319,6 +341,7 @@ def main() -> None:
                     "attempts": attempts_used,
                     "nodes": len(graph.nodes),
                     "edges": len(graph.edges),
+                    **quality,
                     "elapsed_seconds": round(time.monotonic() - started, 3),
                     "finished_at": utc_now(),
                 }
@@ -341,6 +364,10 @@ def main() -> None:
     succeeded = 0
     failed = 0
     completed_this_run = 0
+
+    quality_review = 0
+    quality_ok = 0
+
     started = time.monotonic()
     futures: dict[Future, dict] = {}
     exhausted = False
@@ -362,6 +389,11 @@ def main() -> None:
             for future in done:
                 futures.pop(future)
                 record = future.result()
+                if record["status"] == "success":
+                    if record.get("quality_status") == "review":
+                        quality_review += 1
+                    else:
+                        quality_ok += 1
                 append_record(progress_path, record, append_lock)
                 completed_this_run += 1
 
@@ -376,6 +408,7 @@ def main() -> None:
                     f"nodes={record.get('nodes', '-')} "
                     f"edges={record.get('edges', '-')} "
                     f"attempts={record['attempts']} "
+                    f"quality={record.get('quality_status', '-')} "
                     f"time={record['elapsed_seconds']}s"
                 )
 
@@ -389,6 +422,8 @@ def main() -> None:
     print(f"Processed this run:             {completed_this_run}")
     print(f"Success:                        {succeeded}")
     print(f"Failed:                         {failed}")
+    print(f"Graphs quality OK:              {quality_ok}")
+    print(f"Graphs requiring review:        {quality_review}")
     print(f"Unique samples scanned:         {scan_stats['unique_samples']}")
     print(f"Duplicate code samples skipped: {scan_stats['duplicate_code']}")
     print(f"Invalid/empty code rows:         {scan_stats['invalid_code']}")
